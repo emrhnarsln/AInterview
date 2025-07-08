@@ -21,14 +21,18 @@ class InterviewSetupScreen extends StatelessWidget {
               children: [
                 DropdownButtonFormField(
                   value: selectedArea,
-                  items: areas.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  items: areas
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
                   onChanged: (val) => setState(() => selectedArea = val!),
                   decoration: const InputDecoration(labelText: 'Alan'),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField(
                   value: selectedLevel,
-                  items: levels.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  items: levels
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
                   onChanged: (val) => setState(() => selectedLevel = val!),
                   decoration: const InputDecoration(labelText: 'Seviye'),
                 ),

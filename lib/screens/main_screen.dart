@@ -4,7 +4,6 @@ import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'interview_setup_screen.dart';
 
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -16,10 +15,10 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    const ProfileScreen(),
-    const StudyChatScreen(),
-    const Placeholder(), // bu sadece navigasyon için boşluk
-    const HistoryScreen(),
+    ProfileScreen(),
+    StudyChatScreen(),
+    Placeholder(), // bu sadece navigasyon için boşluk
+    HistoryScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -27,7 +26,8 @@ class _MainScreenState extends State<MainScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const InterviewSetupScreen(), // veya doğrudan InterviewScreen
+          builder: (context) =>
+              const InterviewSetupScreen(), // veya doğrudan InterviewScreen
         ),
       );
       return;
@@ -57,13 +57,9 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.record_voice_over),
             label: 'Mülakata Gir',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Geçmiş',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Geçmiş'),
         ],
       ),
-
     );
   }
 }

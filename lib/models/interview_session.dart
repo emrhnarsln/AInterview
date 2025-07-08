@@ -1,35 +1,55 @@
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-part 'interview_session.g.dart';
+import 'question_answer.dart';
 
-@HiveType(typeId: 0)
-class InterviewSession extends HiveObject {
-  @HiveField(0)
-  final DateTime date;
-
-  @HiveField(1)
-  final List<QuestionAnswer> qaList;
+class InterviewSession {
+  final String id;
+  final String userId;
+  final DateTime timestamp;
+  final List<QuestionAnswer> answers;
 
   InterviewSession({
-    required this.date,
-    required this.qaList,
+    required this.id,
+    required this.userId,
+    required this.timestamp,
+    required this.answers,
   });
-}
 
-@HiveType(typeId: 1)
-class QuestionAnswer {
-  @HiveField(0)
-  final String question;
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'timestamp': Timestamp.fromDate(timestamp),
+      'answers': answers
+          .map(
+            (a) => {
+              'question': a.question,
+              'userAnswer': a.userAnswer,
+              'aiIdealAnswer': a.aiIdealAnswer,
+            },
+          )
+          .toList(),
+    };
+  }
 
-  @HiveField(1)
-  final String userAnswer;
+  static InterviewSession fromMap(String id, Map<String, dynamic> map) {
+    final rawTimestamp = map['timestamp'];
+    DateTime parsedTimestamp;
 
-  @HiveField(2)
-  final String aiIdealAnswer;
+    if (rawTimestamp is Timestamp) {
+      parsedTimestamp = rawTimestamp.toDate();
+    } else if (rawTimestamp is String) {
+      parsedTimestamp = DateTime.parse(rawTimestamp);
+    } else {
+      throw Exception('Geçersiz timestamp formatı');
+    }
 
-  QuestionAnswer({
-    required this.question,
-    required this.userAnswer,
-    required this.aiIdealAnswer,
-  });
+    return InterviewSession(
+      id: id,
+      userId: map['userId'],
+      timestamp: parsedTimestamp,
+      answers: (map['answers'] as List)
+          .map((a) => QuestionAnswer.fromMap(a as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }

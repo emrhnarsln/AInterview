@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/gemini_service.dart';
-import '../models/interview_session.dart';
 import 'result_screen.dart';
-
+import '../models/question_answer.dart';
 
 class InterviewScreen extends StatefulWidget {
   final String area;
   final String level;
 
-
-  const InterviewScreen({
-    required this.area,
-    required this.level,
-    super.key,
-  });
+  const InterviewScreen({required this.area, required this.level, super.key});
 
   @override
   State<InterviewScreen> createState() => _InterviewScreenState();
@@ -36,7 +30,10 @@ class _InterviewScreenState extends State<InterviewScreen> {
   Set<String> previousQuestions = {};
 
   Future<void> _loadNextQuestion() async {
-    setState(() => isLoading = true);
+    if (mounted) {
+      setState(() => isLoading = true);
+    }
+
     final gemini = GeminiService();
 
     String newQuestion = '';
@@ -48,10 +45,11 @@ class _InterviewScreenState extends State<InterviewScreen> {
         level: widget.level,
       );
       attempts++;
-    } while (previousQuestions.contains(newQuestion) && attempts < 5);
+    } while (previousQuestions.contains(newQuestion) && attempts < 2);
 
     previousQuestions.add(newQuestion);
 
+    if (!mounted) return;
     setState(() {
       currentQuestion = newQuestion;
       _answerController.clear();
@@ -59,19 +57,35 @@ class _InterviewScreenState extends State<InterviewScreen> {
     });
   }
 
-
-  void _submitAnswer() {
+  void _submitAnswer() async {
     final answer = _answerController.text.trim();
     if (answer.isEmpty) return;
 
-    qaList.add(QuestionAnswer(question: currentQuestion, userAnswer: answer, aiIdealAnswer: ''));
+    if (!mounted) return;
+    setState(() => isLoading = true);
 
-    if (qaList.length == 5) {
+    final gemini = GeminiService();
+
+    final feedback = await gemini.evaluateAnswer(
+      question: currentQuestion,
+      userAnswer: answer,
+    );
+
+    if (!mounted) return;
+
+    qaList.add(
+      QuestionAnswer(
+        question: currentQuestion,
+        userAnswer: answer,
+        aiIdealAnswer: feedback,
+      ),
+    );
+
+    if (qaList.length == 1) {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => ResultScreen(qaList: qaList),
-        ),
+        MaterialPageRoute(builder: (context) => ResultScreen(qaList: qaList)),
       );
     } else {
       _loadNextQuestion();
@@ -81,41 +95,42 @@ class _InterviewScreenState extends State<InterviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Soru ${qaList.length + 1} / 5'),
-      ),
+      appBar: AppBar(title: Text('Soru ${qaList.length + 1} / 1')),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Soru:', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              Text(currentQuestion),
-              const SizedBox(height: 24),
-              TextField(
-                controller: _answerController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Cevabınızı yazın...',
-                  border: OutlineInputBorder(),
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Soru:',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(currentQuestion),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: _answerController,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        labelText: 'Cevabınızı yazın...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: _submitAnswer,
+                        icon: const Icon(Icons.arrow_forward),
+                        label: const Text('Sonraki'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _submitAnswer,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('Sonraki'),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

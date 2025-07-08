@@ -1,6 +1,6 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/interview_session.dart';
+import '../models/question_answer.dart';
 
 class GeminiService {
   final String _apiKey = dotenv.env['GEMINI_API_KEY']!;
@@ -18,7 +18,8 @@ class GeminiService {
     required String area,
     required String level,
   }) async {
-    final prompt = '''
+    final prompt =
+        '''
 You are a technical interviewer.
 
 The user is a $level level $area candidate.
@@ -60,11 +61,14 @@ Give constructive feedback about the accuracy, clarity, and completeness of the 
     }
   }
 
-  Future<List<String>> evaluateMultipleAnswers(List<QuestionAnswer> qaList) async {
+  Future<List<String>> evaluateMultipleAnswers(
+    List<QuestionAnswer> qaList,
+  ) async {
     List<String> idealAnswers = [];
 
     for (var qa in qaList) {
-      final prompt = '''
+      final prompt =
+          '''
 Soru: "${qa.question}"
 Kullanıcının cevabı: "${qa.userAnswer}"
 
@@ -91,5 +95,4 @@ Sadece cevabı ver, açıklama yazma.
       return 'Hata oluştu: $e';
     }
   }
-
 }

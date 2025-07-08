@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'models/interview_session.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await dotenv.load(); // .env dosyasını yükle
-  await Hive.initFlutter();
-  Hive.registerAdapter(InterviewSessionAdapter());
-  Hive.registerAdapter(QuestionAnswerAdapter());
-  await Hive.openBox<InterviewSession>('sessions');
-  runApp(const MockMeApp());
-
+  runApp(const AIview());
 }
 
-class MockMeApp extends StatelessWidget {
-  const MockMeApp({super.key});
+class AIview extends StatelessWidget {
+  const AIview({super.key});
 
   @override
   Widget build(BuildContext context) {
