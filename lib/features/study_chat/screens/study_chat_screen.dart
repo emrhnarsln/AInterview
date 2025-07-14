@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/gemini_service.dart';
+import '../../../core/services/gemini_service.dart';
 
 class StudyChatScreen extends StatefulWidget {
   const StudyChatScreen({super.key});
@@ -10,7 +10,8 @@ class StudyChatScreen extends StatefulWidget {
 
 class _StudyChatScreenState extends State<StudyChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> messages = []; // {role: user/ai, content: message}
+  final List<Map<String, String>> messages =
+      []; // {role: user/ai, content: message}
   bool isLoading = false;
 
   void _sendMessage() async {
@@ -27,7 +28,7 @@ class _StudyChatScreenState extends State<StudyChatScreen> {
 
     final response = await gemini.generateContent(
       prompt:
-      'Kullanıcı aşağıdaki konuda çalışmak istiyor veya soru soruyor. Açık ve kısa anlat:\n\n"$input"',
+          'Kullanıcı aşağıdaki konuda çalışmak istiyor veya soru soruyor. Açık ve kısa anlat:\n\n"$input"',
     );
 
     setState(() {
@@ -52,7 +53,9 @@ class _StudyChatScreenState extends State<StudyChatScreen> {
                 final isUser = msg['role'] == 'user';
 
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     padding: const EdgeInsets.all(12),
@@ -92,7 +95,7 @@ class _StudyChatScreenState extends State<StudyChatScreen> {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

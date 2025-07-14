@@ -1,8 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:label="interview_with_ai"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+      android:name="com.google.android.gms.auth.api.credentials.CredentialPicker" 
+      android:value="true"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

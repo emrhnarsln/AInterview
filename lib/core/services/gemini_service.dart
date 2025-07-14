@@ -1,6 +1,6 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/question_answer.dart';
+import '../../features/interview/models/question_answer.dart';
 
 class GeminiService {
   final String _apiKey = dotenv.env['GEMINI_API_KEY']!;
@@ -51,6 +51,9 @@ You are a technical interviewer. Here's the question: "$question"
 The user's answer is: "$userAnswer"
 
 Give constructive feedback about the accuracy, clarity, and completeness of the answer. Be helpful and professional.
+
+Only respond with the feedback. No explanations, no greetings. Please write the feedback in Turkish.
+
 ''';
 
     try {

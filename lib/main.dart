@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
+import 'screens/main_screen.dart';
+import 'features/auth/screens/login_screen.dart';
+import 'providers/interview_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await dotenv.load(); // .env dosyasını yükle
-  runApp(const AIview());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => InterviewProvider()),
+      ],
+      child: const AIview(),
+    ),
+  );
 }
 
 class AIview extends StatelessWidget {
@@ -16,9 +28,15 @@ class AIview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MockMe - AI Mülakat',
+      title: 'AIview',
       theme: ThemeData(primarySwatch: Colors.indigo),
-      home: const HomeScreen(),
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          return authProvider.isAuthenticated
+              ? const MainScreen()
+              : const LoginScreen();
+        },
+      ),
     );
   }
 }
