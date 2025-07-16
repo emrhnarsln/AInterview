@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/interview_provider.dart';
 import 'result_screen.dart';
-import '../models/interview_session.dart';
 import '../models/question_answer.dart';
 
 class HistoryScreen extends StatelessWidget {
