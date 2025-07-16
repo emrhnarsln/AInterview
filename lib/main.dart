@@ -8,9 +8,16 @@ import 'screens/main_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'providers/interview_provider.dart';
 import 'dart:io';
+import 'providers/tts_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!Platform.isAndroid && !Platform.isIOS) {
+    debugPrint("Sadece mobil platform destekleniyor.");
+    return;
+  }
+
   await Firebase.initializeApp();
   await dotenv.load();
 
@@ -22,6 +29,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => InterviewProvider()),
+        ChangeNotifierProvider(create: (_) => TtsProvider()),
       ],
       child: const AIview(),
     ),

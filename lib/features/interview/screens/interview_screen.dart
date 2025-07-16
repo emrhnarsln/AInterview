@@ -1,13 +1,11 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-
 import '../../../features/interview/screens/result_screen.dart';
 import '../../../providers/interview_provider.dart';
 import '../../../core/services/audio_recorder_service.dart';
 import '../../../core/services/whisper_service.dart';
+import '../../../providers/tts_provider.dart';
 
 class InterviewScreen extends StatefulWidget {
   final String area;
@@ -21,9 +19,9 @@ class InterviewScreen extends StatefulWidget {
 
 class _InterviewScreenState extends State<InterviewScreen> {
   final TextEditingController _answerController = TextEditingController();
-  final FlutterTts _flutterTts = FlutterTts();
   final _recorder = AudioRecorderService();
   final _whisperService = WhisperService();
+  late TtsProvider _tts;
 
   bool _isRecording = false;
 
@@ -36,6 +34,18 @@ class _InterviewScreenState extends State<InterviewScreen> {
       provider.resetInterview();
       provider.loadNextQuestion(widget.area, widget.level);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tts = context.read<TtsProvider>();
+  }
+
+  @override
+  void dispose() {
+    _tts.stop(); // context yok, ama daha önce aldığımız referansı kullanıyoruz
+    super.dispose();
   }
 
   Future<void> _startAudioRecording() async {
@@ -79,12 +89,6 @@ class _InterviewScreenState extends State<InterviewScreen> {
     }
   }
 
-  Future<void> _speak(String text) async {
-    await _flutterTts.setLanguage("tr-TR");
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.speak(text);
-  }
-
   Future<void> _submitAnswer() async {
     final provider = context.read<InterviewProvider>();
     final answer = _answerController.text.trim();
@@ -92,12 +96,26 @@ class _InterviewScreenState extends State<InterviewScreen> {
 
     await provider.submitAnswer(answer);
 
+    // Ekran hâlâ aktif mi kontrol et
+    if (!mounted) return;
+
     final aiIdeal = provider.qaList.last.aiIdealAnswer;
-    if (aiIdeal.isNotEmpty) await _speak(aiIdeal);
+
+    // Sesli geri bildirimi sadece ekran hâlâ aktifken yap
+    if (aiIdeal.isNotEmpty) {
+      await context.read<TtsProvider>().stop(); // önceki ses durdurulsun
+      if (!mounted) return; // hâlâ aktif mi? (önlem)
+      await context.read<TtsProvider>().speak(aiIdeal);
+    }
 
     if (!mounted) return;
 
     if (provider.qaList.length == 1) {
+      await context
+          .read<TtsProvider>()
+          .stop(); // ResultScreen'e geçmeden önce ses durmalı
+
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ResultScreen()),
@@ -111,6 +129,7 @@ class _InterviewScreenState extends State<InterviewScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<InterviewProvider>();
+    final tts = context.watch<TtsProvider>();
 
     return Scaffold(
       appBar: AppBar(title: Text('Soru ${provider.questionIndex + 1} / 1')),
@@ -122,7 +141,29 @@ class _InterviewScreenState extends State<InterviewScreen> {
                 children: [
                   Text('Soru:', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  Text(provider.currentQuestion),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          provider.currentQuestion,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          tts.isPlaying ? Icons.stop : Icons.volume_up,
+                        ),
+                        tooltip: tts.isPlaying
+                            ? "Okumayı Durdur"
+                            : "Soruyu Sesli Dinle",
+                        onPressed: () async {
+                          await tts.speak(provider.currentQuestion);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   const SizedBox(height: 24),
                   TextField(
                     controller: _answerController,
