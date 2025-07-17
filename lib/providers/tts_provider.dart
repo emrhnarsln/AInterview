@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../core/services/google_tts_service.dart';
@@ -7,7 +9,7 @@ class TtsProvider with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   String _voiceName = 'tr-TR-Wavenet-A';
-  double _speed = 1.0;
+  double _speed = 1.4;
   double _pitch = 0.0;
 
   bool _isPlaying = false;
@@ -35,10 +37,10 @@ class TtsProvider with ChangeNotifier {
   }
 
   // --- Konuşma başlat
-  Future<void> speak(String text) async {
+  Future<Uint8List?> speak(String text) async {
     if (_isPlaying) {
-      await stop(); // yeniden bastıysa önce durdur
-      return;
+      await stop();
+      return null;
     }
 
     final audioBytes = await _ttsService.synthesizeText(
@@ -54,13 +56,15 @@ class TtsProvider with ChangeNotifier {
 
       await _audioPlayer.play(BytesSource(audioBytes));
 
-      // Ses bitince otomatik durumu sıfırla
       _audioPlayer.onPlayerComplete.listen((event) {
         _isPlaying = false;
         notifyListeners();
       });
+
+      return audioBytes; // 💡 artık döndürülüyor
     } else {
       debugPrint("🎤 Google TTS'den ses alınamadı.");
+      return null;
     }
   }
 
