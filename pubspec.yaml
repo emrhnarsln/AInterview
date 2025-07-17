@@ -21,6 +21,7 @@ dependencies:
   http: ^1.2.1
   record: ^5.2.1
   audioplayers: ^5.2.1
+  web_socket_channel: ^2.4.0
 
 dev_dependencies:
   flutter_test:

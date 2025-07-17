@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../features/study_chat/screens/study_chat_screen.dart';
-import '../features/interview/screens/history_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/interview/screens/interview_setup_screen.dart';
+import '../features/interview/screens/history_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -12,53 +13,81 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
+  bool _hasOpenedStudyScreen = false;
 
   final List<Widget> _pages = const [
     ProfileScreen(),
-    StudyChatScreen(),
-    Placeholder(), // bu sadece navigasyon için boşluk
+    InterviewSetupScreen(),
     HistoryScreen(),
+    SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              const InterviewSetupScreen(), // veya doğrudan InterviewScreen
-        ),
-      );
-      return;
-    }
     setState(() => _selectedIndex = index);
+  }
+
+  void _onFabPressed() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StudyChatScreen()),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Ekran yüklendikten sonra StudyChatScreen'e yönlendirme
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_hasOpenedStudyScreen) {
+        _hasOpenedStudyScreen = true;
+        _onFabPressed();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.indigo,
-        unselectedItemColor: Colors.grey[800],
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profil',
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onFabPressed,
+        child: const Icon(Icons.auto_fix_high),
+        backgroundColor: Colors.indigo,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 6.0,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.person),
+                onPressed: () => _onItemTapped(0),
+                color: _selectedIndex == 0 ? Colors.indigo : Colors.grey,
+              ),
+              IconButton(
+                icon: Icon(Icons.work_outline),
+                onPressed: () => _onItemTapped(1),
+                color: _selectedIndex == 1 ? Colors.indigo : Colors.grey,
+              ),
+              const SizedBox(width: 40), // FAB boşluğu
+              IconButton(
+                icon: Icon(Icons.history),
+                onPressed: () => _onItemTapped(2),
+                color: _selectedIndex == 2 ? Colors.indigo : Colors.grey,
+              ),
+              IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () => _onItemTapped(3),
+                color: _selectedIndex == 3 ? Colors.indigo : Colors.grey,
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'AI ile Çalış',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.record_voice_over),
-            label: 'Mülakata Gir',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Geçmiş'),
-        ],
+        ),
       ),
     );
   }
